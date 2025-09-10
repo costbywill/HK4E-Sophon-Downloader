@@ -10,7 +10,8 @@ namespace Core.Runner
         {
             Core.Utils.WindowUtils.CenterConsole();
 
-            _ = AppConfig.Config;
+            if (args.Length > 0)
+                CliHandler.ParseArgsAndSetConfig(args);
 
             var version = Assembly
                 .GetExecutingAssembly()
@@ -20,7 +21,7 @@ namespace Core.Runner
             Console.Title = $"HK4E Sophon Downloader v{version}";
 
             if (args.Length == 0)
-                return await MenuUI.RunInteractiveMenu();
+                return await InteractiveMenu.RunInteractiveMenu();
 
             return await CliHandler.RunWithArgs(args);
         }

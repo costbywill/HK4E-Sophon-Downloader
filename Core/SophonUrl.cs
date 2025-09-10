@@ -89,7 +89,7 @@ namespace Core
             {
                 case Region.OSREL:
                     apiBase = "https://sg-hyp-api.hoyoverse.com/hyp/hyp-connect/api/getGameBranches";
-                    sophonBase = "https://sg-public-api.hoyoverse.com/downloader/sophon_chunk/api/getBuild";
+                    sophonBase = "https://sg-public-api.hoyoverse.com:443/downloader/sophon_chunk/api/getBuild";
                     break;
                 case Region.CNREL:
                     apiBase = "https://hyp-api.mihoyo.com/hyp/hyp-connect/api/getGameBranches";
@@ -113,17 +113,39 @@ namespace Core
             var obj = JsonSerializer.Deserialize<BranchesRoot>(json);
 
             string[] data = ParseBuildData(obj, branch);
+
             if (data[0] != "OK")
             {
-                Console.WriteLine($"Error: {data[1]}");
-                return -1;
+                if (branch == BranchType.PreDownload)
+                {
+                    packageId = "ScSYQBFhu9";
+                    password = "ZOJpUiKu4Sme";
+                    branchBackup = new BranchesRoot();
+                    return 0;
+                }
+                else if (branch == BranchType.Main)
+                {
+                    packageId = "ScSYQBFhu9";
+                    password = "bDL4JUHL625x";
+                    branchBackup = new BranchesRoot();
+                    return 0;
+                }
+                else
+                {
+                    Console.WriteLine($"Error: {data[1]}");
+                    return -1;
+                }
             }
 
             gameBiz = data[1];
-            packageId = data[2];
-            password = data[3];
-            branchBackup = obj!;
+            packageId = string.IsNullOrEmpty(data[2])
+                ? (branch == BranchType.PreDownload ? "ScSYQBFhu9" : "ScSYQBFhu9")
+                : data[2];
+            password = string.IsNullOrEmpty(data[3])
+                ? (branch == BranchType.PreDownload ? "ZOJpUiKu4Sme" : "bDL4JUHL625x")
+                : data[3];
 
+            branchBackup = obj!;
             return 0;
         }
 

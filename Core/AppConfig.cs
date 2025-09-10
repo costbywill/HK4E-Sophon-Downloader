@@ -13,6 +13,7 @@ namespace Core
         public string Branch { get; set; } = "main";
         public string LauncherId { get; set; } = "VYTpXlbWo8";
         public string PlatApp { get; set; } = "ddxf6vlr1reo";
+        public string Password { get; set; } = "bDL4JUHL625x";
         public int Threads { get; set; } = Math.Max(1, Environment.ProcessorCount / 2);
         public int MaxHttpHandle { get; set; } = 128;
         public bool Silent { get; set; } = false;
@@ -38,6 +39,7 @@ namespace Core
             if (!File.Exists(ConfigPath))
             {
                 var cfg = new AppConfig { Versions = GetDefaultVersions() };
+                cfg.SetPasswordByBranch();
                 cfg.Save();
                 Console.WriteLine("[INFO] config.json not found. Created default config.");
                 return cfg;
@@ -113,18 +115,28 @@ namespace Core
                     cfg.PlatApp = "ddxf6vlr1reo";
                 }
 
+                cfg.SetPasswordByBranch();
+
                 cfg.Save();
                 return cfg;
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"[WARN] Failed to load config.json: {ex.Message}");
-                Console.WriteLine("[INFO] Using default configuration.");
-
                 var fallback = new AppConfig { Versions = GetDefaultVersions() };
+                fallback.SetPasswordByBranch();
                 fallback.Save();
                 return fallback;
             }
+        }
+
+        public void SetPasswordByBranch()
+        {
+            Password = Branch switch
+            {
+                "main" => "bDL4JUHL625x",
+                "predownload" => "ZOJpUiKu4Sme",
+                _ => ""
+            };
         }
 
         public void Save()
@@ -139,6 +151,7 @@ namespace Core
             W(1, $"\"Branch\": \"{Branch}\",");
             W(1, $"\"LauncherId\": \"{LauncherId}\",");
             W(1, $"\"PlatApp\": \"{PlatApp}\",");
+            W(1, $"\"Password\": \"{Password}\",");
             W(1, $"\"Threads\": {Threads},");
             W(1, $"\"MaxHttpHandle\": {MaxHttpHandle},");
             W(1, $"\"Silent\": {Silent.ToString().ToLower()},");
@@ -164,7 +177,6 @@ namespace Core
     public class VersionsConfig
     {
         public List<string> Full { get; set; } = new();
-
         public List<List<string>> Update { get; set; } = new();
     }
 

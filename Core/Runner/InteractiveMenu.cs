@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Core.Runner
 {
-    public static class MenuUI
+    public static class InteractiveMenu
     {
         public static async Task<int> RunInteractiveMenu()
         {

@@ -60,22 +60,22 @@ Sophon.Downloader.exe update <gameId> <package> <fromVer> <toVer> <outputDir> [o
 
 ```cmd
 Sophon.Downloader.exe full gopR6Cufr3 game 6.0 Downloads
-Sophon.Downloader.exe update gopR6Cufr3 en-us 5.8 6.0 Downloads --threads=4 --handles=128
+Sophon.Downloader.exe update gopR6Cufr3 en-us 5.8 6.0 Downloads --predownload --OSREL --threads=2 --handles=64
 ```
 
 
 ### CLI Options
 
-| Option           | Description                                 |
-|------------------|---------------------------------------------|
-| `--region=...`   | `OSREL` or `CNREL` (default: OSREL)         |
-| `--branch=...`   | Branch override (default: main)             |
-| `--launcherId=...` | Launcher ID override                      |
-| `--platApp=...`  | Platform App ID override                    |
-| `--threads=...`  | Number of threads (auto-limited)            |
-| `--handles=...`  | Max HTTP handles (default 128)              |
-| `--silent`       | Disable all console output except errors    |
-| `-h`, `--help`   | Show help info                              |
+| Option             | Description                                 |
+|--------------------|---------------------------------------------|
+| `--region=...`     | `OSREL` or `CNREL` (default: OSREL)         |
+| `--branch=...`     | `main` or `predownload` (default: main)     |
+| `--launcherId=...` | Launcher ID override                        |
+| `--platApp=...`    | Platform App ID override                    |
+| `--threads=...`    | Number of threads (auto-limited)            |
+| `--handles=...`    | Max HTTP handles (default 128)              |
+| `--silent`         | Disable all console output except errors    |
+| `-h`, `--help`     | Show help info                              |
 
 > If your input is garbage, it will fall back to defaults silently.  
 > You were warned.
@@ -93,6 +93,7 @@ Example:
   "Branch": "main",
   "LauncherId": "VYTpXlbWo8",
   "PlatApp": "ddxf6vlr1reo",
+  "Password": "bDL4JUHL625x",
   "Threads": 4,
   "MaxHttpHandle": 128,
   "Silent": false,

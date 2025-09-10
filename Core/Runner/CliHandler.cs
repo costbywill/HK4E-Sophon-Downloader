@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Mono.Options;
 
@@ -9,30 +9,26 @@ namespace Core.Runner
 {
     public static class CliHandler
     {
-        public static async Task<int> RunWithArgs(string[] args)
+        private static string EnsureNotEmpty(string v, string name)
         {
-            bool showHelp = false;
-            string action = "", gameId = "", updateFrom = "", updateTo = "", outputDir = "", matchingField = "";
+            if (string.IsNullOrWhiteSpace(v))
+                throw new OptionException($"Missing value for --{name}", name);
+            return v.Trim();
+        }
 
-            string EnsureNotEmpty(string v, string name)
-            {
-                if (string.IsNullOrWhiteSpace(v))
-                    throw new OptionException($"Missing value for --{name}", name);
-                return v.Trim();
-            }
-
+        public static void ParseArgsAndSetConfig(string[] args)
+        {
             var options = new OptionSet
             {
                 { "region=", "Region: OSREL or CNREL", v =>
                     {
                         var region = EnsureNotEmpty(v, "region").ToUpperInvariant();
                         if (region != "OSREL" && region != "CNREL")
-                            throw new OptionException("Invalid value for --region (must be OSREL or CNREL)", "region");
-
+                            throw new OptionException("Invalid value for --region", "region");
                         AppConfig.Config.Region = region;
                     }
                 },
-                { "branch=", "Branch name override", v =>
+                { "branch=", "Branch override", v =>
                     AppConfig.Config.Branch = EnsureNotEmpty(v, "branch")
                 },
                 { "launcherId=", "Launcher ID override", v =>
@@ -44,33 +40,53 @@ namespace Core.Runner
                 { "threads=", "Threads to use", v =>
                     {
                         if (!int.TryParse(v, out int val) || val <= 0)
-                            throw new OptionException("Invalid value for --threads (must be positive integer)", "threads");
-
-                        if (val > 32 && !AppConfig.Config.Silent)
-                        {
-                            Console.ForegroundColor = ConsoleColor.Yellow;
-                            Console.WriteLine("[WARN] Using more than 32 threads may not be optimal for all systems.");
-                            Console.ResetColor();
-                        }
-
+                            throw new OptionException("Invalid value for --threads", "threads");
                         AppConfig.Config.Threads = val;
                     }
                 },
                 { "handles=", "HTTP handles", v =>
                     {
                         if (!int.TryParse(v, out int val) || val <= 0)
-                            throw new OptionException("Invalid value for --handles (must be positive integer)", "handles");
-
+                            throw new OptionException("Invalid value for --handles", "handles");
                         AppConfig.Config.MaxHttpHandle = val;
                     }
                 },
                 { "silent", "Silent mode", _ => AppConfig.Config.Silent = true },
-                { "h|help", "Show help", _ => showHelp = true },
+                { "CNREL", "Switch to CN region", _ =>
+                    {
+                        AppConfig.Config.Region = "CNREL";
+                        AppConfig.Config.LauncherId = "jGHBHlcOq1";
+                        AppConfig.Config.PlatApp = "ddxf5qt290cg";
+                    }
+                },
+                { "OSREL", "Switch to OS region", _ =>
+                    {
+                        AppConfig.Config.Region = "OSREL";
+                        AppConfig.Config.LauncherId = "VYTpXlbWo8";
+                        AppConfig.Config.PlatApp = "ddxf6vlr1reo";
+                    }
+                },
+                { "h|help", "Show help", _ => {} },
             };
+
+            options.Parse(args);
+
+            if (args.Contains("--main"))
+                AppConfig.Config.Branch = "main";
+            else if (args.Contains("--predownload"))
+                AppConfig.Config.Branch = "predownload";
+
+            AppConfig.Config.SetPasswordByBranch();
+        }
+
+        public static async Task<int> RunWithArgs(string[] args)
+        {
+            bool showHelp = false;
+            string action = "", gameId = "", updateFrom = "", updateTo = "", outputDir = "", matchingField = "";
 
             try
             {
-                List<string> extra = options.Parse(args);
+                List<string> extra = new OptionSet().Parse(args);
                 int count = extra.Count;
                 action = count > 1 ? extra[0].ToLowerInvariant() : "";
 
@@ -96,15 +112,8 @@ namespace Core.Runner
 
                 if (!showHelp)
                 {
-                    try
-                    {
-                        string fullPath = Path.GetFullPath(outputDir);
-                        Directory.CreateDirectory(fullPath);
-                    }
-                    catch
-                    {
-                        throw new OptionException("Invalid output directory path.", "outputDir");
-                    }
+                    string fullPath = Path.GetFullPath(outputDir);
+                    Directory.CreateDirectory(fullPath);
                 }
             }
             catch (OptionException e)
@@ -125,29 +134,9 @@ namespace Core.Runner
                       Sophon.Downloader.exe full   <gameId> <package> <version> <outputDir> [options]
                       Sophon.Downloader.exe update <gameId> <package> <fromVer> <toVer> <outputDir> [options]
 
-                    Arguments:
-                      <gameId>     Game ID (example: gopR6Cufr3)
-                      <package>    Language or resource type (example: game, en-us, ja-jp)
-                      <version>    Game version (example: 5.6)
-                      <outputDir>  Target folder for downloaded files
-
-                    Game ID:
-                      gopR6Cufr3   game id for hk4e OSREL
-                      1Z8W5NHUQb   game id for hk4e CNREL
-
-                    Options:
-                      --region=OSREL|CNREL        Region code (default: OSREL)
-                      --branch=<value>            Branch override (default: main)
-                      --launcherId=<value>        Override Launcher ID
-                      --platApp=<value>           Override Platform App ID
-                      --threads=<n>               Number of download threads
-                      --handles=<n>               Max HTTP handles (default: 128, max: 512)
-                      --silent                    Disable all console output except errors
-                      -h, --help                  Show this help message
-
                     Example:
                       Sophon.Downloader.exe full gopR6Cufr3 game 5.8 Downloads
-                      Sophon.Downloader.exe update gopR6Cufr3 en-us 5.8 6.0 Downloads --threads=4 --handles=128
+                      Sophon.Downloader.exe update gopR6Cufr3 en-us 5.8 6.0 Downloads --predownload --OSREL --threads=2 --handles=64
                 """);
                 return 0;
             }

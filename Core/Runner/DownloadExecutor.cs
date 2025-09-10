@@ -26,16 +26,20 @@ namespace Core.Runner
             Enum.TryParse(AppConfig.Config.Region, out Region region);
             BranchType branch = Enum.Parse<BranchType>(AppConfig.Config.Branch, true);
             Game game = new(region, gameId);
-            SophonUrl url = new(region, game.GetGameId(), branch, AppConfig.Config.LauncherId, AppConfig.Config.PlatApp);
+
+            SophonUrl urlPrev = new(region, game.GetGameId(), BranchType.Main, AppConfig.Config.LauncherId, AppConfig.Config.PlatApp);
+            SophonUrl urlNew = new(region, game.GetGameId(), branch, AppConfig.Config.LauncherId, AppConfig.Config.PlatApp);
 
             if (updateFrom.Count(c => c == '.') == 1) updateFrom += ".0";
+            if (!string.IsNullOrWhiteSpace(updateTo) && updateTo.Count(c => c == '.') == 1) updateTo += ".0";
 
             if (!AppConfig.Config.Silent)
                 Console.WriteLine("[INFO] Initializing region, branch, and game info...");
 
             try
             {
-                await url.GetBuildData();
+                await urlPrev.GetBuildData();
+                await urlNew.GetBuildData();
             }
             catch (HttpRequestException)
             {
@@ -56,14 +60,8 @@ namespace Core.Runner
                 return;
             }
 
-            string prevManifest = url.GetBuildUrl(updateFrom, false);
-            string newManifest = "";
-
-            if (action == "update")
-            {
-                if (updateTo.Count(c => c == '.') == 1) updateTo += ".0";
-                newManifest = url.GetBuildUrl(updateTo, true);
-            }
+            string prevManifest = urlPrev.GetBuildUrl(updateFrom, false);
+            string newManifest = action == "update" ? urlNew.GetBuildUrl(updateTo, true) : "";
 
             if (!AppConfig.Config.Silent)
             {
