@@ -60,7 +60,7 @@ Sophon.Downloader.exe update <gameId> <package> <fromVer> <toVer> <outputDir> [o
 
 ```cmd
 Sophon.Downloader.exe full gopR6Cufr3 game 6.0 Downloads
-Sophon.Downloader.exe update gopR6Cufr3 en-us 5.8 6.0 Downloads --predownload --OSREL --threads=2 --handles=64
+Sophon.Downloader.exe update gopR6Cufr3 en-us 6.0 6.1 Downloads --predownload --OSREL --threads=2 --handles=64
 ```
 
 
@@ -98,7 +98,7 @@ Example:
   "MaxHttpHandle": 128,
   "Silent": false,
   "Versions": {
-    "full": ["5.6", "5.7", "5.8", "6.0"],
+    "full": ["5.6", "5.7", "5.8", "6.0", "6.1"],
     "update": [
       ["5.5", "5.6"],
       ["5.5", "5.7"],
@@ -106,7 +106,9 @@ Example:
       ["5.6", "5.8"],
       ["5.7", "5.8"],
       ["5.7", "6.0"],
-      ["5.8", "6.0"]
+      ["5.8", "6.0"],
+      ["5.8", "6.1"],
+      ["6.0", "6.1"]
     ]
   }
 }

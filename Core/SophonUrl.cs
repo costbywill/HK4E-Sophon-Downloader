@@ -171,7 +171,9 @@ namespace Core
             query["package_id"] = packageId;
             query["password"] = password;
             query["plat_app"] = platApp;
-            query["tag"] = version;
+
+            if (branch != BranchType.PreDownload)
+                query["tag"] = version;
 
             uri.Query = query.ToString();
             return uri.ToString();

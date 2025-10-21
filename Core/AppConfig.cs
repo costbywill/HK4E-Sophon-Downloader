@@ -24,13 +24,14 @@ namespace Core
 
         private static VersionsConfig GetDefaultVersions() => new()
         {
-            Full = new() { "5.6", "5.7", "5.8", "6.0" },
+            Full = new() { "5.6", "5.7", "5.8", "6.0", "6.1" },
             Update = new()
             {
                 new() { "5.5", "5.6" }, new() { "5.5", "5.7" },
                 new() { "5.6", "5.7" }, new() { "5.6", "5.8" },
                 new() { "5.7", "5.8" }, new() { "5.7", "6.0" },
-                new() { "5.8", "6.0" }
+                new() { "5.8", "6.0" }, new() { "5.8", "6.1" },
+                new() { "6.0", "6.1" }
             }
         };
 
